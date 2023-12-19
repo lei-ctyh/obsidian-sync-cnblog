@@ -9,7 +9,7 @@ import WeblogClient from "./src/utils/weblogclient";
 
 export default class SyncCnblogPlugin extends Plugin {
 	settings: SyncCnblogSettings;
-	client:  WeblogClient
+	client: WeblogClient
 
 	async onload() {
 		// 添加指令到ctrl+p的控制面板
@@ -23,23 +23,23 @@ export default class SyncCnblogPlugin extends Plugin {
 		// 注册指令到右键的文件菜单
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
-				menu.addItem((item) => {
-					item
-						.setTitle("同步到博客园")
-						.setIcon("upload")
-						.onClick(async () => {
-							new Notice(file.path)
-							if (file instanceof TFile) {
+				if (file instanceof TFile) {
+					menu.addItem((item) => {
+						item
+							.setTitle("同步到博客园")
+							.setIcon("upload")
+							.onClick(async () => {
+								debugger
 								let content = await getMdContent(file)
 								let localImgPaths = findAllImg(content)
 								localImgPaths.forEach(localImgPath => {
+
 									console.log(localImgPath)
 								})
-							}else {
-								new Notice("请选择md文件")
-							}
-						});
-				});
+							});
+					});
+				}
+
 			}));
 
 

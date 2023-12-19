@@ -1,6 +1,8 @@
 import {SyncCnblogSettings} from "../setting";
 import {Notice, request, RequestUrlParam} from "obsidian";
-import {parseXml} from "./xmlutil";
+import {generateReqXml, parseXml} from "./xmlutil";
+import {ApiType} from "../enum/ApiType";
+import {XmlParam} from "../model/XmlParam";
 
 
 export default class WeblogClient {
@@ -10,14 +12,17 @@ export default class WeblogClient {
 		this.settings = settings;
 	}
 
+	/**
+	 * 获取用户的博客信息
+	 * 主要用于检测用户输入的参数是否正确
+	 */
 	public getUsersBlogs(): void {
-		const requestUrlParam: RequestUrlParam = {
-			contentType: 'application/xml',
-			method: 'POST',
-			url: 'https://rpc.cnblogs.com/metaweblog/aaalei',
-			body: '<?xml version="1.0"?>\r\n<methodCall>\r\n  <methodName>blogger.getUsersBlogs</methodName>\r\n  <params>\r\n    <param>\r\n        <value><string></string></value>\r\n    </param>\r\n    <param>\r\n        <value><string>2468341590@qq.com</string></value>\r\n    </param>\r\n    <param>\r\n        <value><string>95529D103516E0289554BD76D87CBABC72811A92F37AEA3ABE3B8266D3A1B5F9</string></value>\r\n    </param>\r\n  </params>\r\n</methodCall>\r\n'
-		}
-		request(requestUrlParam).then(res => {
+		let params = [
+			new XmlParam("string", ""),
+			new XmlParam("string",this.settings.username),
+			new XmlParam("string",this.settings.password),
+		]
+		this.sendRequest(ApiType.GETUSERSBLOGS,params).then(res => {
 			const xml = new DOMParser().parseFromString(res, 'text/xml');
 			const result = parseXml(xml)
 			if (result.faultString != undefined) {
@@ -30,15 +35,34 @@ export default class WeblogClient {
 		})
 	}
 
-	// blogger.deletePost
-	// blogger.getUsersBlogs
-	// metaWeblog.editPost
-	// metaWeblog.getCategories
-	// metaWeblog.getPost
-	// metaWeblog.getRecentPosts
-	// metaWeblog.newMediaObject
-	// metaWeblog.newPost
-	// wp.newCategory
+	public getCategories(): void {
+		let params = [
+			new XmlParam("string", ""),
+			new XmlParam("string",this.settings.username),
+			new XmlParam("string",this.settings.password),
+		]
+		this.sendRequest(ApiType.GETCATEGORIES,params).then(res => {
+			const xml = new DOMParser().parseFromString(res, 'text/xml');
+			console.log(xml)
 
+		})
+	}
+
+	public newMediaObject(): string[] {
+		return []
+
+	}
+
+
+
+	private sendRequest(apiType: ApiType, params: XmlParam[]): Promise<string>{
+		const requestUrlParam: RequestUrlParam = {
+			contentType: 'application/xml',
+			method: 'POST',
+			url: this.settings.blog_url,
+			body: generateReqXml(apiType, params)
+		}
+		return request(requestUrlParam)
+	}
 }
 
