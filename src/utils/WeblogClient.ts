@@ -1,8 +1,10 @@
-import {SyncCnblogSettings} from "../setting";
+import {SyncCnblogSettings} from "../Setting";
 import {Notice, request, RequestUrlParam} from "obsidian";
-import {generateReqXml, parseXml} from "./xmlutil";
+import {generateReqXml, parseXml} from "./XmlUtil";
 import {ApiType} from "../enum/ApiType";
 import {XmlParam} from "../model/XmlParam";
+import {XmlStruct} from "../model/XmlStruct";
+import {XmlMember} from "../model/XmlMember";
 
 
 export default class WeblogClient {
@@ -17,12 +19,13 @@ export default class WeblogClient {
 	 * 主要用于检测用户输入的参数是否正确
 	 */
 	public getUsersBlogs(): void {
-		let params = [
+		const params = [
 			new XmlParam("string", ""),
 			new XmlParam("string",this.settings.username),
 			new XmlParam("string",this.settings.password),
 		]
 		this.sendRequest(ApiType.GETUSERSBLOGS,params).then(res => {
+			console.log("响应结果: " + res )
 			const xml = new DOMParser().parseFromString(res, 'text/xml');
 			const result = parseXml(xml)
 			if (result.faultString != undefined) {
@@ -36,7 +39,7 @@ export default class WeblogClient {
 	}
 
 	public getCategories(): void {
-		let params = [
+		const params = [
 			new XmlParam("string", ""),
 			new XmlParam("string",this.settings.username),
 			new XmlParam("string",this.settings.password),
@@ -48,14 +51,26 @@ export default class WeblogClient {
 		})
 	}
 
-	public newMediaObject(): string[] {
-		return []
+	public newMediaObject(name: string,type: string,base64Img: string): Promise<string> {
 
+		let struct = new XmlStruct([
+			new XmlMember("name", "string", name),
+			new XmlMember("type", "string", type),
+			new XmlMember("bits", "base64", base64Img),
+		]);
+		const params = [
+			new XmlParam("string", ""),
+			new XmlParam("string",this.settings.username),
+			new XmlParam("string",this.settings.password),
+			new XmlParam("struct", struct.toString())
+		]
+		return this.sendRequest(ApiType.NEWMEDIAOBJECT,params);
 	}
 
 
 
 	private sendRequest(apiType: ApiType, params: XmlParam[]): Promise<string>{
+		console.log("请求类型: " + apiType)
 		const requestUrlParam: RequestUrlParam = {
 			contentType: 'application/xml',
 			method: 'POST',

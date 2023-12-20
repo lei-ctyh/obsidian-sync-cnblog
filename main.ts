@@ -1,7 +1,20 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin, PluginSettingTab, Setting, TFile, Vault,} from 'obsidian';
-import {DEFAULT_SETTINGS, SyncCnblogSettings, SampleSettingTab} from "./src/setting";
-import {findAllImg, getMdContent} from "./src/utils/mdfile";
-import WeblogClient from "./src/utils/weblogclient";
+import {
+	App,
+	arrayBufferToBase64,
+	Editor,
+	MarkdownView,
+	Modal,
+	Notice,
+	Plugin,
+	PluginSettingTab,
+	Setting,
+	TFile,
+	Vault,
+} from 'obsidian';
+import {DEFAULT_SETTINGS, SyncCnblogSettings, SampleSettingTab} from "./src/Setting";
+import {findAllImg, getAttachmentTFolder, getImgFromAttachmentFolder, getMdContent, uploadImgs} from "./src/utils/MdFile";
+import WeblogClient from "./src/utils/WeblogClient";
+import {XmlParam} from "./src/model/XmlParam";
 
 
 // Remember to rename these classes and interfaces!
@@ -24,20 +37,29 @@ export default class SyncCnblogPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
 				if (file instanceof TFile) {
-					menu.addItem((item) => {
-						item
-							.setTitle("同步到博客园")
-							.setIcon("upload")
-							.onClick(async () => {
-								debugger
-								let content = await getMdContent(file)
-								let localImgPaths = findAllImg(content)
-								localImgPaths.forEach(localImgPath => {
+					if (file.extension === "md") {
+						menu.addItem((item) => {
+							item
+								.setTitle("同步到博客园")
+								.setIcon("upload")
+								.onClick(async () => {
+									new XmlParam("struct", "<member>\n" +
+										"    <name>url</name>\n" +
+										"    <value>\n" +
+										"        <string>\n" +
+										"            https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231220180856469-304885348.png\n" +
+										"        </string>\n" +
+										"    </value>\n" +
+										"</member>").getValue()
+									debugger
+									/*const content = await getMdContent(file)
+									const imgPaths = findAllImg(content)
+									let attachmentFolder = getAttachmentTFolder(file, this.settings.location_attachments)
+									let urlImgs =await uploadImgs(imgPaths, attachmentFolder, this)*/
+								});
+						});
+					}
 
-									console.log(localImgPath)
-								})
-							});
-					});
 				}
 
 			}));
@@ -46,7 +68,7 @@ export default class SyncCnblogPlugin extends Plugin {
 		await this.loadSettings();
 
 		// 创建左侧图标, 点击时的响应事件
-		const ribbonIconEl = this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
+		this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
 			this.client.getUsersBlogs()
 		});
 

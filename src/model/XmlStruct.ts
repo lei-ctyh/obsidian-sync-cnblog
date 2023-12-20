@@ -6,7 +6,7 @@ export class XmlStruct {
         this.members = members;
     }
     public toString(): string {
-        return `<struct>${this.members.join('')}</struct>`;
+        return `${this.members.join('')}`;
     }
 
 }
