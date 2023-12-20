@@ -1,7 +1,7 @@
 import {XmlMember} from "./XmlMember";
 
 export class XmlStruct {
-    private readonly members: XmlMember[];
+    public readonly members: XmlMember[];
     constructor(members: XmlMember[]) {
         this.members = members;
     }

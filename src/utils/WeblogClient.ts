@@ -67,8 +67,6 @@ export default class WeblogClient {
 		return this.sendRequest(ApiType.NEWMEDIAOBJECT,params);
 	}
 
-
-
 	private sendRequest(apiType: ApiType, params: XmlParam[]): Promise<string>{
 		console.log("请求类型: " + apiType)
 		const requestUrlParam: RequestUrlParam = {
@@ -79,5 +77,17 @@ export default class WeblogClient {
 		}
 		return request(requestUrlParam)
 	}
+
+	public deletePost(postId: string): Promise<string> {
+		const params = [
+			new XmlParam("string", ""),
+			new XmlParam("string",this.settings.username),
+			new XmlParam("string",this.settings.password),
+			new XmlParam("string", postId)
+		]
+		return this.sendRequest(ApiType.DELETEPOST,params);
+	}
+
+
 }
 

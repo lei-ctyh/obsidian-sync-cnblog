@@ -1,9 +1,9 @@
 import {XmlParam} from "./XmlParam";
 
 export class XmlMember {
-    private readonly name: string;
-    private readonly type: string;
-    private readonly value: string;
+    public readonly name: string;
+    public readonly type: string;
+    public readonly value: string;
     constructor(name: string, type: string, value: string) {
         this.name = name;
         this.type = type;
