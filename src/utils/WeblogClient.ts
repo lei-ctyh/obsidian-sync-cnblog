@@ -5,14 +5,21 @@ import {ApiType} from "../enum/ApiType";
 import {XmlParam} from "../model/XmlParam";
 import {XmlStruct} from "../model/XmlStruct";
 import {XmlMember} from "../model/XmlMember";
+import CacheUtil from "./CacheUtil";
 
 
 export default class WeblogClient {
-	private settings: SyncCnblogSettings;
-
-	constructor(settings: SyncCnblogSettings) {
-		this.settings = settings;
+	private static instance: WeblogClient;
+	private constructor() {
 	}
+	public static getInstance(): WeblogClient {
+		if (WeblogClient.instance == null) {
+			WeblogClient.instance = new WeblogClient();
+		}
+		return WeblogClient.instance;
+	}
+
+
 
 	/**
 	 * 获取用户的博客信息
@@ -21,8 +28,8 @@ export default class WeblogClient {
 	public getUsersBlogs(): void {
 		const params = [
 			new XmlParam("string", ""),
-			new XmlParam("string",this.settings.username),
-			new XmlParam("string",this.settings.password),
+			new XmlParam("string",CacheUtil.getSettingData().username),
+			new XmlParam("string",CacheUtil.getSettingData().password),
 		]
 		this.sendRequest(ApiType.GETUSERSBLOGS,params).then(res => {
 			console.log("响应结果: " + res )
@@ -41,8 +48,8 @@ export default class WeblogClient {
 	public getCategories(): void {
 		const params = [
 			new XmlParam("string", ""),
-			new XmlParam("string",this.settings.username),
-			new XmlParam("string",this.settings.password),
+			new XmlParam("string",CacheUtil.getSettingData().username),
+			new XmlParam("string",CacheUtil.getSettingData().password),
 		]
 		this.sendRequest(ApiType.GETCATEGORIES,params).then(res => {
 			const xml = new DOMParser().parseFromString(res, 'text/xml');
@@ -60,8 +67,8 @@ export default class WeblogClient {
 		]);
 		const params = [
 			new XmlParam("string", ""),
-			new XmlParam("string",this.settings.username),
-			new XmlParam("string",this.settings.password),
+			new XmlParam("string",CacheUtil.getSettingData().username),
+			new XmlParam("string",CacheUtil.getSettingData().password),
 			new XmlParam("struct", struct.toString())
 		]
 		return this.sendRequest(ApiType.NEWMEDIAOBJECT,params);
@@ -72,7 +79,7 @@ export default class WeblogClient {
 		const requestUrlParam: RequestUrlParam = {
 			contentType: 'application/xml',
 			method: 'POST',
-			url: this.settings.blog_url,
+			url: CacheUtil.getSettingData().blog_url,
 			body: generateReqXml(apiType, params)
 		}
 		return request(requestUrlParam)
@@ -81,13 +88,23 @@ export default class WeblogClient {
 	public deletePost(postId: string): Promise<string> {
 		const params = [
 			new XmlParam("string", ""),
-			new XmlParam("string",this.settings.username),
-			new XmlParam("string",this.settings.password),
+			new XmlParam("string",CacheUtil.getSettingData().username),
+			new XmlParam("string",CacheUtil.getSettingData().password),
 			new XmlParam("string", postId)
 		]
 		return this.sendRequest(ApiType.DELETEPOST,params);
 	}
 
+	public getRecentPosts(): Promise<string> {
+		const params = [
+			new XmlParam("string", ""),
+			new XmlParam("string", CacheUtil.getSettingData().username),
+			new XmlParam("string", CacheUtil.getSettingData().password),
+			new XmlParam("string", "10"),
+			new XmlParam("i4", "1000")
+		]
+		return new Promise(string => {});
+	}
 
 }
 

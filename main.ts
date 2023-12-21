@@ -20,16 +20,20 @@ import {
     uploadImgs
 } from "./src/utils/MdFile";
 import WeblogClient from "./src/utils/WeblogClient";
+import CacheUtil from "./src/utils/CacheUtil";
 
 
 // Remember to rename these classes and interfaces!
 
 
 export default class SyncCnblogPlugin extends Plugin {
-    settings: SyncCnblogSettings;
+
     client: WeblogClient
 
     async onload() {
+		await CacheUtil.loadData()
+
+
         // 添加指令到ctrl+p的控制面板
         this.addCommand({
             id: "sync_cnblog",
@@ -50,7 +54,7 @@ export default class SyncCnblogPlugin extends Plugin {
                                 .onClick(async () => {
                                     let content = await getMdContent(file)
                                     const imgPaths = findAllImg(content)
-                                    let attachmentFolder = getAttachmentTFolder(file, this.settings.location_attachments)
+                                    let attachmentFolder = getAttachmentTFolder(file, CacheUtil.getSettingData().location_attachments)
                                     let urlAndLocalImgs = await uploadImgs(imgPaths, attachmentFolder, this)
                                     // 网络地址替换本地地址
                                     let replacedMd = await replaceImgLocalToNet(content, urlAndLocalImgs)
@@ -61,10 +65,7 @@ export default class SyncCnblogPlugin extends Plugin {
                 }
 
             }));
-
-
         await this.loadSettings();
-
         // 创建左侧图标, 点击时的响应事件
         this.addRibbonIcon('dice', 'Sample Plugin', (evt: MouseEvent) => {
             this.client.getUsersBlogs()
@@ -72,6 +73,17 @@ export default class SyncCnblogPlugin extends Plugin {
 
         // 这添加了一个设置选项卡，以便用户可以配置插件的各个方面
         this.addSettingTab(new SampleSettingTab(this.app, this));
+
+		this.registerEvent(this.app.vault.on('delete', () => {
+			// TODO 判断是否和博客园文件关联,如果有关联则删除
+			console.log('文件删除')
+		}));
+		this.registerEvent(this.app.vault.on('rename', (newFile, oldFile) => {
+			// TODO 判断是否和博客园文件关联,如果有关联则进行文章重命名
+			console.log('文件重命名newFile',newFile)
+			console.log('文件重命名oldFile',newFile)
+
+		}));
     }
 
 
@@ -81,14 +93,10 @@ export default class SyncCnblogPlugin extends Plugin {
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
-        this.client = new WeblogClient(this.settings);
+		CacheUtil.setSettingData(Object.assign({}, DEFAULT_SETTINGS, await this.loadData()));
     }
 
-    async saveSettings() {
-        await this.saveData(this.settings);
-        this.client = new WeblogClient(this.settings);
-    }
+
 }
 
 

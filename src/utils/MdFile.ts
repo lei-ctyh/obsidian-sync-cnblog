@@ -101,7 +101,6 @@ export async function uploadImgs(imgPaths: string[], attachmentFolder: TFolder, 
  * @returns 替换后的md内容
  */
 export async function replaceImgLocalToNet(mdContent: string, localAndNetImgs: Map<string, string>[]): Promise<string> {
-    debugger
     for (let i = 0; i < localAndNetImgs.length; i++) {
         let map = localAndNetImgs[i]
         let imgPath = map.get("imgPath")
