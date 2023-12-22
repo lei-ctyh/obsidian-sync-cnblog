@@ -1,25 +1,17 @@
 import {DEFAULT_SETTINGS, SyncCnblogSettings} from "../Setting";
-
+import SyncCnblogPlugin from "../../main";
 export default class CacheUtil {
-	settings: SyncCnblogSettings;
-	private static instance: CacheUtil;
-	private constructor() {
+	private static settings: SyncCnblogSettings;
+	public static getSettings(): SyncCnblogSettings{
+		return this.settings;
 	}
-	public static getInstance(): CacheUtil {
-		if (!CacheUtil.instance) {
-			CacheUtil.instance = new CacheUtil();
-		}
-		return CacheUtil.instance;
+	public static setSettings(settings: SyncCnblogSettings): void{
+		this.settings = settings;
 	}
-	public static getSettingData(): SyncCnblogSettings{
-		return this.getInstance().settings;
+	public static async  saveSettings(): Promise<void>{
+		return  SyncCnblogPlugin.getPluginThis().saveData(this.settings);
 	}
-	public static setSettingData(settings: SyncCnblogSettings): void {
-		this.getInstance().settings = settings;
-	}
-	public static loadData(): void {
-		// CacheUtil.setSettingData(Object.assign({}, DEFAULT_SETTINGS, await this.loadData()));
-	}
+
 
 	/*// 缓存数据
 cache_data: [

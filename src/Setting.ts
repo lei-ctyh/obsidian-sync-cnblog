@@ -1,5 +1,6 @@
 import {App, PluginSettingTab, Setting} from "obsidian";
 import SyncCnblogPlugin from "../main";
+import CacheUtil from "./utils/CacheUtil";
 
 export interface SyncCnblogSettings {
 	blog_url: string;
@@ -35,10 +36,10 @@ export class SampleSettingTab extends PluginSettingTab {
 			.setDesc('博客园MetaWeblog访问地址')
 			.addText(text => text
 				.setPlaceholder('请输入你的参数')
-				.setValue(this.plugin.settings.blog_url)
+				.setValue(CacheUtil.getSettings().blog_url)
 				.onChange(async (value) => {
-					this.plugin.settings.blog_url = value;
-					await this.plugin.saveSettings();
+					CacheUtil.getSettings().blog_url = value;
+					await CacheUtil.saveSettings();
 				}));
 
 		new Setting(containerEl)
@@ -46,10 +47,10 @@ export class SampleSettingTab extends PluginSettingTab {
 			.setDesc('博客园MetaWeblog访问地址后缀')
 			.addText(text => text
 				.setPlaceholder('请输入你的参数')
-				.setValue(this.plugin.settings.blog_id)
+				.setValue(CacheUtil.getSettings().blog_id)
 				.onChange(async (value) => {
-					this.plugin.settings.blog_id = value;
-					await this.plugin.saveSettings();
+					CacheUtil.getSettings().blog_id = value;
+					await CacheUtil.saveSettings();
 				}));
 
 		new Setting(containerEl)
@@ -57,20 +58,20 @@ export class SampleSettingTab extends PluginSettingTab {
 			.setDesc('MetaWeblog登录名')
 			.addText(text => text
 				.setPlaceholder('请输入你的参数')
-				.setValue(this.plugin.settings.username)
+				.setValue(CacheUtil.getSettings().username)
 				.onChange(async (value) => {
-					this.plugin.settings.username = value;
-					await this.plugin.saveSettings();
+					CacheUtil.getSettings().username = value;
+					await CacheUtil.saveSettings();
 				}));
 		new Setting(containerEl)
 			.setName('password')
 			.setDesc('MetaWeblog访问令牌')
 			.addText(text => text
 				.setPlaceholder('请输入你的参数')
-				.setValue(this.plugin.settings.password)
+				.setValue(CacheUtil.getSettings().password)
 				.onChange(async (value) => {
-					this.plugin.settings.password = value;
-					await this.plugin.saveSettings();
+					CacheUtil.getSettings().password = value;
+					await CacheUtil.saveSettings();
 				}));
 	}
 }
