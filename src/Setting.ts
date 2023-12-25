@@ -12,10 +12,11 @@ export interface SyncCnblogSettings {
 }
 
 export const DEFAULT_SETTINGS: SyncCnblogSettings = {
-	blog_url: "https:/ /rpc.cnblogs.com/metaweblog/aaalei",
-	blog_id: "aaalei",
-	username: "2468341590@qq.com",
-	password: "5529D103516E0289554BD76D87CBABC72811A92F37AEA3ABE3B8266D3A1B5F9",
+	blog_url: "",
+	// blog_id 这个参数暂时没有用到
+	blog_id: "",
+	username: "",
+	password: "",
 	location_attachments: "./assets/${filename}"
 }
 export class SampleSettingTab extends PluginSettingTab {
@@ -42,7 +43,7 @@ export class SampleSettingTab extends PluginSettingTab {
 					await CacheUtil.saveSettings();
 				}));
 
-		new Setting(containerEl)
+		/*new Setting(containerEl)
 			.setName('blog_id')
 			.setDesc('博客园MetaWeblog访问地址后缀')
 			.addText(text => text
@@ -51,7 +52,7 @@ export class SampleSettingTab extends PluginSettingTab {
 				.onChange(async (value) => {
 					CacheUtil.getSettings().blog_id = value;
 					await CacheUtil.saveSettings();
-				}));
+				}));*/
 
 		new Setting(containerEl)
 			.setName('username')

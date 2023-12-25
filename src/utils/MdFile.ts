@@ -114,7 +114,6 @@ export async function replaceImgLocalToNet(mdContent: string, localAndNetImgs: M
 		let imgPattern = new RegExp(imgPath, "g")
 		mdContent = mdContent.replace(imgPattern, urlImgPath)
 	}
-	console.log(mdContent)
 	return mdContent;
 }
 
@@ -125,19 +124,7 @@ export async function replaceImgLocalToNet(mdContent: string, localAndNetImgs: M
  * @param md md内容
  */
 export async function getThePost(file: TFile, md: string): Promise<Post> {
-	let respXml = await WeblogClient.getRecentPosts()
-	if (respXml) {
-		let posts = parseRespXml(ApiType.GETRECENTPOSTS, respXml)
-		for (let i = 0; i < posts.length; i++) {
-			let post = posts[i]
-			if (post.title == file.basename) {
-				post.description = md;
-				return post
-			}
-		}
-
-	}
-	let newPost = new Post();
+	let newPost = await getThePostByName(file.basename, md)
 	newPost.title = file.basename;
 	newPost.description = md;
 	// 时间戳转日期 20231219T22:55:00
@@ -152,16 +139,40 @@ export async function getThePost(file: TFile, md: string): Promise<Post> {
 	return newPost;
 }
 
+export async function getThePostByName(fileName: string, md: string, replaceMd: boolean = true): Promise<Post> {
+	let respXml = await WeblogClient.getRecentPosts()
+	if (respXml) {
+		let posts = parseRespXml(ApiType.GETRECENTPOSTS, respXml)
+		for (let i = 0; i < posts.length; i++) {
+			let post = posts[i]
+			if (post.title == fileName) {
+				if (replaceMd) {
+					post.description = md;
+				}
+				return post
+			}
+		}
+	}
+	return new Post();
+}
+
 /**
  * 上传文章  新增则新增文章, 修改则编辑文章
  * @param post 文章对象
  * @returns 文章链接
  */
-// export async function uploadPost(post: Post): Promise<string> {
-// 	let respXml = await WeblogClient.newPost(post)
-// 	if (respXml) {
-// 		let postId = parseRespXml(ApiType.NEWPOST, respXml)
-// 		return postId
-// 	}
-// 	return ""
-// }
+export async function uploadPost(post: Post): Promise<string> {
+	let resp: string;
+	if (post.postid === undefined) {
+		resp = await WeblogClient.newPost(post)
+		if (resp.indexOf("faultString") <= 0) {
+			return "上传文章成功"
+		}
+	}else {
+		resp = await  WeblogClient.editPost(post)
+		if (resp.indexOf("faultString") <= 0) {
+			return "上传文章成功"
+		}
+	}
+	return "上传文章失败"
+}

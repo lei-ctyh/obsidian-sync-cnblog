@@ -5,4 +5,5 @@ export class CategoryInfo {
 	public rssUrl: string;
 	public title: string;
 	public categoryid: string;
+
   }

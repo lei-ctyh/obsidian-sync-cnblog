@@ -7,8 +7,8 @@ import {DEFAULT_SETTINGS, SyncCnblogSettings, SampleSettingTab} from "./src/Sett
 import {
 	findAllImg,
 	getAttachmentTFolder,
-	getMdContent, getThePost, replaceImgLocalToNet,
-	uploadImgs
+	getMdContent, getThePost, getThePostByName, replaceImgLocalToNet,
+	uploadImgs, uploadPost
 } from "./src/utils/MdFile";
 import WeblogClient from "./src/utils/WeblogClient";
 import CacheUtil from "./src/utils/CacheUtil";
@@ -46,10 +46,8 @@ export default class SyncCnblogPlugin extends Plugin {
 									// 网络地址替换本地地址
 									let replacedMd = await replaceImgLocalToNet(content, urlAndLocalImgs)
 									let post = await getThePost(file, replacedMd)
-									debugger
 									// 上传文章
-
-
+									new Notice(await uploadPost(post))
 								});
 						});
 					}
@@ -72,16 +70,26 @@ export default class SyncCnblogPlugin extends Plugin {
 
 		});
 
+		this.registerEvent(this.app.vault.on('delete', (file) => {
+			// fixme 删除时应该告知用户是否同步删除博文, 现版本暂不支持
 
-
-		this.registerEvent(this.app.vault.on('delete', () => {
-			// TODO 判断是否和博客园文件关联,如果有关联则删除
-			console.log('文件删除')
 		}));
-		this.registerEvent(this.app.vault.on('rename', (newFile, oldFile) => {
-			// TODO 判断是否和博客园文件关联,如果有关联则进行文章重命名
-			console.log('文件重命名newFile', newFile)
-			console.log('文件重命名oldFile', newFile)
+		this.registerEvent(this.app.vault.on('rename', async (newFile, oldPath) => {
+			if (newFile instanceof TFile ) {
+				if (newFile.extension === "md") {
+					// @ts-ignore
+					let oldFileName = oldPath.split("/").pop().substring(0, oldPath.split("/").pop().lastIndexOf("."))
+					let post = await getThePostByName(oldFileName, "",false)
+					// 上传文章
+					if (post.postid !== undefined) {
+						post.title = newFile.basename
+						new Notice(await uploadPost(post))
+					}
+				}
+			}
+
+
+
 		}));
 	}
 

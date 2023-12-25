@@ -11,21 +11,4 @@ export default class CacheUtil {
 	public static async  saveSettings(): Promise<void>{
 		return  SyncCnblogPlugin.getPluginThis().saveData(this.settings);
 	}
-
-
-	/*// 缓存数据
-cache_data: [
-	{
-		post_id : string,
-		local_path: string,
-		imgMap:[
-			{
-				local_img_path: string,
-				net_img_path: string
-			}
-		]
-	}
-
-];*/
-
 }

@@ -33,7 +33,7 @@ export default class WeblogClient {
 		]
 		this.sendRequest(ApiType.GETCATEGORIES, params).then(res => {
 			const xml = new DOMParser().parseFromString(res, 'text/xml');
-			console.log(xml)
+			// console.log(xml)
 
 		})
 	}
@@ -75,9 +75,31 @@ export default class WeblogClient {
 		return parseRespXml(ApiType.GETPOST, respXml);
 	}
 
+	public static async newPost(post: Post): Promise<string> {
+		const params = [
+			new XmlParam("string", ""),
+			new XmlParam("string", CacheUtil.getSettings().username),
+			new XmlParam("string", CacheUtil.getSettings().password),
+			new XmlParam("struct", post.toReqXml()),
+			new XmlParam("boolean", "1")
+		]
+		return this.sendRequest(ApiType.NEWPOST, params);
+	}
+
+	public static async editPost(post: Post): Promise<string> {
+		const params = [
+			new XmlParam("string", post.postid),
+			new XmlParam("string", CacheUtil.getSettings().username),
+			new XmlParam("string", CacheUtil.getSettings().password),
+			new XmlParam("struct", post.toReqXml()),
+			new XmlParam("boolean", "1")
+		]
+		return this.sendRequest(ApiType.EDITPOST, params);
+	}
+
 
 	private static sendRequest(apiType: ApiType, params: XmlParam[]): Promise<string> {
-		console.log("请求类型: " + apiType)
+		// console.log("请求类型: " + apiType)
 		const requestUrlParam: RequestUrlParam = {
 			contentType: 'application/xml',
 			method: 'POST',
