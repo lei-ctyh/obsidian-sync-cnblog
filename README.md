@@ -1,96 +1,82 @@
-# Obsidian Sample Plugin
+---
+tags: obsidian 插件开发 TypeScript
+author: zhanglei
+data: 2023-12-19
+---
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+## 开始
+### 项目简介
+> 由于Markdown语法的便捷性, 我们从繁重的排版布局工作中解脱出来, 越来越多的人开始接受这种写作方式, 该插件可以将你的md笔记, 方便的同步到博客园中, 即使你是使用的本地图片, 也无须担心, 他都能轻松应对, 并且不会对你的本地文档造成任何影响
 
-This project uses Typescript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in Typescript Definition format, which contains TSDoc comments describing what it does.
+### 快速上手
+> 既然是Obsidian插件, 必然默认以及安装好了Obsidian这款编辑器
 
-**Note:** The Obsidian API is still in early alpha and is subject to change at any time!
+#### 下载依赖插件
+>关闭安全模式，如果已经关闭可跳过此步骤
+>路径:  `设置` -> `选项` -> `第三方插件` 
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153039439-730338389.png)
 
-## First time developing plugins?
 
-Quick starting guide for new plugin devs:
+> 打开社区插件市场，这可能需要你会一点点的魔法
+> 路径:  `设置` -> `选项` -> `第三方插件` 
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153040008-1097325003.png)
 
-## Releasing new releases
+> 社区插件市场内搜索 `Custom Attachment Location`
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153040385-1144361996.png)
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
 
-## Adding your plugin to the community plugin list
+> 点击搜索出的插件，点击安装
 
-- Check https://github.com/obsidianmd/obsidian-releases/blob/master/plugin-review.md
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153040809-1276908773.png)
 
-## How to use
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+> 点击启用该插件
 
-## Manually installing the plugin
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153041280-1552334496.png)
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
 
-## Funding URL
+> 下载obsidian-sync-cnblog
 
-You can include funding URLs where people who use your plugin can financially support it.
+操作步骤如上
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+#### 配置Obsidian
+> 我们需要进入到 `设置` -> `选项` -> `文件与链接` 选项卡，将下图中红框内的设置项调整成与图片一致
 
-If you have multiple URLs, you can also do:
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153041808-1595238013.png)
 
-## API Documentation
 
-See https://github.com/obsidianmd/obsidian-api
+> 进入 `Custom Attachment Location` 选项卡，按照下图配置项依次配置即可
+> 路径: `设置` -> `第三方插件` -> `Custom Attachment Location`
+
+ ![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153042334-1751724213.png)
+
+> 进入 `sync-cnblog`选项卡，该选项卡中的所有参数均要参考自己的博客园账号，按照实际需求配置，这些参数从哪里来,我们继续往下看
+
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153047775-1126706784.png)
+
+> 进入博客园-> 设置-> 其他设置（滑到页面底部即可看到）
+> 在该页面中我们可以配置如下参数  `blog_url`，`username`，`password`
+
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153048161-804891030.png)
+
+#### 验证插件是否可用
+> 点击下图中左侧按钮, 弹出博客园名称, 即代表参数正常, 插件可用
+
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153048578-192166628.png)
+
+#### 上传文章
+> 启用插件后, 右键.md结尾的文件会出现 `同步到博客园` 的按钮, 点击该按钮, 文章会自动发布到博客园
+
+![](https://img2023.cnblogs.com/blog/2395785/202312/2395785-20231225153049000-2095278408.png)
+
+#### 修改文章
+> 如果已经上传的文章, 再次点击 `同步到博客园` 的按钮, 会对博客园已发布文章进行更新
+
+#### 重命名
+> 当前插件会自动检查重命名操作, 如果该文章已经上传博客园, 并且进行了重命名, 博客园文章的名称也会自动进行重命名的操作
