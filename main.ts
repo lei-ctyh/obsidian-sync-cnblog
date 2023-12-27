@@ -72,7 +72,6 @@ export default class SyncCnblogPlugin extends Plugin {
 
 		this.registerEvent(this.app.vault.on('delete', (file) => {
 			// fixme 删除时应该告知用户是否同步删除博文, 现版本暂不支持
-
 		}));
 		this.registerEvent(this.app.vault.on('rename', async (newFile, oldPath) => {
 			if (newFile instanceof TFile ) {
