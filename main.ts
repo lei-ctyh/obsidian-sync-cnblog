@@ -3,7 +3,7 @@ import {
 	Plugin,
 	TFile,
 } from 'obsidian';
-import {DEFAULT_SETTINGS, SyncCnblogSettings, SampleSettingTab} from "./src/Setting";
+import {DEFAULT_SETTINGS, SyncCnblogSettings, SyncCnblogSettingTab} from "./src/Setting";
 import {
 	findAllImg,
 	getAttachmentTFolder,
@@ -111,7 +111,7 @@ export default class SyncCnblogPlugin extends Plugin {
 			SyncCnblogPlugin.plugin_this = this;
 		}
 		// 这添加了一个设置选项卡，以便用户可以配置插件的各个方面
-		this.addSettingTab(new SampleSettingTab(this.app, this));
+		this.addSettingTab(new SyncCnblogSettingTab(this.app, this));
 		CacheUtil.setSettings(Object.assign({}, DEFAULT_SETTINGS, await this.loadData()));
 	}
 }

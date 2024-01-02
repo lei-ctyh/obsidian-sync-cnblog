@@ -19,7 +19,7 @@ export const DEFAULT_SETTINGS: SyncCnblogSettings = {
 	password: "",
 	location_attachments: "./assets/${filename}"
 }
-export class SampleSettingTab extends PluginSettingTab {
+export class SyncCnblogSettingTab extends PluginSettingTab {
 	plugin: SyncCnblogPlugin;
 
 	constructor(app: App, plugin: SyncCnblogPlugin) {

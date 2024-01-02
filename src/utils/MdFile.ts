@@ -21,11 +21,12 @@ export function findAllImg(mdContent: String): string[] {
 	// md = md.replace(netImgPattern, "")
 
 	// 获取所有本地图片地址 <img src="(.*?)
-
-	let localImgPattern = /(?<=!\[.*]\()(.+)(?=\))/g
-	let localImgs = md.match(localImgPattern)
-	if (localImgs) {
-		return localImgs
+	let localImgPattern = /!\[.*]\(([^)]+)\)/g
+	let matches = md.match(localImgPattern);
+	if (matches) {
+		return matches.map(match => {
+			return match.replace(/!\[.*]\(([^)]+)\)/, "$1")
+		});
 	} else {
 		return []
 	}
