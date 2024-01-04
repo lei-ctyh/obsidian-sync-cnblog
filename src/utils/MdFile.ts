@@ -1,5 +1,5 @@
 import SyncCnblogPlugin from "main";
-import {arrayBufferToBase64, TAbstractFile, TFile, TFolder} from "obsidian";
+import {arrayBufferToBase64, CachedMetadata, getAllTags, TAbstractFile, TFile, TFolder} from "obsidian";
 import {parseRespXml} from "./XmlUtil";
 import WeblogClient from "./WeblogClient";
 import {ApiType} from "../enum/ApiType";
@@ -11,25 +11,27 @@ export async function getMdContent(file: TFile): Promise<string> {
 	return await vault.cachedRead(file);
 }
 
-export function findAllImg(mdContent: String): string[] {
-
-	// 排除代码块中的图片地址
-	let codePattern = /```.*?```/g
-	let md = mdContent.replace(codePattern, "")
-	// 排除网络图片地址
-	// let netImgPattern = /!\[.*?\]\(.*?\)/g
-	// md = md.replace(netImgPattern, "")
-
-	// 获取所有本地图片地址 <img src="(.*?)
-	let localImgPattern = /!\[.*]\(([^)]+)\)/g
-	let matches = md.match(localImgPattern);
-	if (matches) {
-		return matches.map(match => {
-			return match.replace(/!\[.*]\(([^)]+)\)/, "$1")
-		});
-	} else {
-		return []
+export function findAllImg(file: TFile): string[] {
+	let imgPaths: string[] = [];
+	const {metadataCache} = this.app;
+	let {embeds}: CachedMetadata = metadataCache.getFileCache(file)
+	if (embeds != null) {
+		embeds?.forEach((embed) => {
+			imgPaths.push(embed.link)
+		})
 	}
+	return imgPaths
+
+}
+
+
+export function findAllTags(file: TFile): string[] | null {
+	const {metadataCache} = this.app;
+	const metadata: CachedMetadata = metadataCache.getFileCache(file)
+	if (metadata == null) {
+		return [];
+	}
+	return getAllTags(metadata);
 }
 
 /**
@@ -55,47 +57,47 @@ export function getAttachmentTFolder(file: TFile, location_attachments: string):
  * 获取附件中的图片TFile对象
  * @param filepath 图片地址
  * @param abstractFile 附件TFolder对象
+ * @returns TFile 图片TFile对象 | null 说明图片不存在
  */
-export function getImgFromAttachmentFolder(filepath: string, abstractFile: TAbstractFile): any {
+export function getImgFromAttachmentFolder(filepath: string, abstractFile: TAbstractFile): TFile | null {
 	if (abstractFile instanceof TFile) {
 		if (abstractFile.path.indexOf(filepath) > -1) {
-			return abstractFile
+			return abstractFile;
 		}
 	}
 
 	if (abstractFile instanceof TFolder) {
-		let children = abstractFile.children
-		for (let i = 0; i < children.length; i++) {
-			let child = children[i]
-			let rtnFile = getImgFromAttachmentFolder(filepath, child);
+		for (const child of abstractFile.children) {
+			const rtnFile = getImgFromAttachmentFolder(filepath, child);
 			if (rtnFile) {
-				return rtnFile
+				return rtnFile;
 			}
 		}
 	}
 	// 查询不到返回空
-	return false;
+	return null;
 }
 
 export async function uploadImgs(imgPaths: string[], attachmentFolder: TFolder, plugin: SyncCnblogPlugin): Promise<Map<string, string>[]> {
-	let rtnImgs: Map<string, string>[] = []
-	for (let index in imgPaths) {
-		let imgPath = imgPaths[index]
-		let map = new Map()
-		map.set("imgPath", imgPath)
-		let img = getImgFromAttachmentFolder(imgPath, attachmentFolder);
-		if (img) {
-			// 等 then执行完再往下走
-			let imgContent = await plugin.app.vault.readBinary(img)
-			// 图片内容进行base64编码
-			let respMag = await WeblogClient.newMediaObject(img.name, img.extension, arrayBufferToBase64(imgContent))
-			let urlData = parseRespXml(ApiType.NEWMEDIAOBJECT, respMag)
-			map.set("urlImgPath", urlData.url)
-			rtnImgs.push(map)
-			// 对文件内容进行base64编码
+	let rtnImgs: Map<string, string>[] = [];
+
+	// 批量处理
+	const imgBatchPromises = imgPaths.map(async (imgPath) => {
+		let img =  getImgFromAttachmentFolder(imgPath, attachmentFolder);
+		if (img != null) {
+			let imgContent = await plugin.app.vault.readBinary(img);
+			let respMag = await WeblogClient.newMediaObject(img.name, img.extension, arrayBufferToBase64(imgContent));
+			let urlData = parseRespXml(ApiType.NEWMEDIAOBJECT, respMag);
+
+			let map = new Map();
+			map.set("imgPath", imgPath);
+			map.set("urlImgPath", urlData.url);
+			rtnImgs.push(map);
 		}
-	}
-	return rtnImgs
+	});
+	// 使用 Promise.all 进行并行处理
+	await Promise.all(imgBatchPromises);
+	return rtnImgs;
 }
 
 /**
@@ -136,7 +138,8 @@ export async function getThePost(file: TFile, md: string): Promise<Post> {
 	let hours = dateCreated.getHours();
 	let minutes = dateCreated.getMinutes();
 	let seconds = dateCreated.getSeconds();
-	newPost.dateCreated =  ""+year + month + date + "T" + hours + minutes + seconds ;
+	//  时间格式 20240103T11:35:00
+	newPost.dateCreated = "" + year + month + date + "T" +hours+":"+minutes+":"+"00";
 	return newPost;
 }
 
@@ -169,8 +172,8 @@ export async function uploadPost(post: Post): Promise<string> {
 		if (resp.indexOf("faultString") <= 0) {
 			return "上传文章成功"
 		}
-	}else {
-		resp = await  WeblogClient.editPost(post)
+	} else {
+		resp = await WeblogClient.editPost(post)
 		if (resp.indexOf("faultString") <= 0) {
 			return "上传文章成功"
 		}

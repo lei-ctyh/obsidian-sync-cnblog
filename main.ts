@@ -3,9 +3,9 @@ import {
 	Plugin,
 	TFile,
 } from 'obsidian';
-import {DEFAULT_SETTINGS, SyncCnblogSettings, SyncCnblogSettingTab} from "./src/Setting";
+import {DEFAULT_SETTINGS, SyncCnblogSettingTab} from "./src/Setting";
 import {
-	findAllImg,
+	findAllImg, findAllTags,
 	getAttachmentTFolder,
 	getMdContent, getThePost, getThePostByName, replaceImgLocalToNet,
 	uploadImgs, uploadPost
@@ -15,8 +15,6 @@ import CacheUtil from "./src/utils/CacheUtil";
 
 export default class SyncCnblogPlugin extends Plugin {
 	private static plugin_this: SyncCnblogPlugin;
-	private setting: SyncCnblogSettings;
-
 	async onload() {
 		// 初始化instance
 		await this.initPlug()
@@ -40,12 +38,24 @@ export default class SyncCnblogPlugin extends Plugin {
 								.setIcon("upload")
 								.onClick(async () => {
 									let content = await getMdContent(file)
-									const imgPaths = findAllImg(content)
+									const imgPaths = findAllImg(file)
+									const tags: string[] | null = findAllTags(file);
 									let attachmentFolder = getAttachmentTFolder(file, CacheUtil.getSettings().location_attachments)
 									let urlAndLocalImgs = await uploadImgs(imgPaths, attachmentFolder, this)
 									// 网络地址替换本地地址
 									let replacedMd = await replaceImgLocalToNet(content, urlAndLocalImgs)
 									let post = await getThePost(file, replacedMd)
+									if (tags) {
+										let mt_keywords = "";
+										tags.forEach(tag => {
+											if (mt_keywords === "") {
+												mt_keywords = tag.substring(1, tag.length)
+											} else {
+												mt_keywords = mt_keywords + "," + tag.substring(1, tag.length)
+											}
+										})
+										post.mt_keywords = mt_keywords;
+									}
 									// 上传文章
 									new Notice(await uploadPost(post))
 								});
@@ -56,7 +66,7 @@ export default class SyncCnblogPlugin extends Plugin {
 
 			}));
 		// 创建左侧图标, 点击时可测试插件是否可用
-		this.addRibbonIcon('dice', 'Sample Plugin', async (evt: MouseEvent) => {
+		this.addRibbonIcon('dice', 'Sample Plugin', async () => {
 			try {
 				let blogs = await WeblogClient.getUsersBlogs()
 				if (blogs[0].blogName === undefined) {
@@ -72,6 +82,7 @@ export default class SyncCnblogPlugin extends Plugin {
 
 		this.registerEvent(this.app.vault.on('delete', (file) => {
 			// fixme 删除时应该告知用户是否同步删除博文, 现版本暂不支持
+			new Notice(""+file.name+"文章不会在博客园删除!")
 		}));
 		this.registerEvent(this.app.vault.on('rename', async (newFile, oldPath) => {
 			if (newFile instanceof TFile ) {
