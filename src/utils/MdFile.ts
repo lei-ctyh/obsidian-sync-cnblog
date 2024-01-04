@@ -138,8 +138,8 @@ export async function getThePost(file: TFile, md: string): Promise<Post> {
 	let hours = dateCreated.getHours();
 	let minutes = dateCreated.getMinutes();
 	let seconds = dateCreated.getSeconds();
-	//  时间格式 20240103T11:35:00
-	newPost.dateCreated = "" + year + month + date + "T" +hours+":"+minutes+":"+"00";
+	//  时间格式 20240103T11:35:00  不足两位补0
+	newPost.dateCreated = "" + year + (month < 10? "0" + month : month) + (date < 10? "0" + date : date) + "T" +(hours < 10? "0" + hours : hours)+":"+(minutes < 10? "0" + minutes : minutes)+":"+(seconds < 10? "0" + seconds : seconds);
 	return newPost;
 }
 
