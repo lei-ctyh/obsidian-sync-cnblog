@@ -7,7 +7,7 @@ import {
 import {DEFAULT_SETTINGS, SyncCnblogSettingTab} from "./src/Setting";
 import {
 	findAllEmbeds,
-	 findKeywords,
+	findKeywords,
 	getAttachmentTFolder,
 	getMdContent, getThePost, getThePostByName, replaceImgLocalToNet,
 	uploadImgs, uploadPost
@@ -45,7 +45,7 @@ export default class SyncCnblogPlugin extends Plugin {
 								.setIcon("upload")
 								.onClick(async () => {
 									let content = await getMdContent(file)
-									const embeds:EmbedCache[] = findAllEmbeds(file)
+									const embeds: EmbedCache[] = findAllEmbeds(file)
 									let attachmentFolder = getAttachmentTFolder(file, CacheUtil.getSettings().location_attachments)
 									let addUrlEmbeds = await uploadImgs(embeds, attachmentFolder, this)
 									// 网络地址替换本地地址
@@ -71,9 +71,8 @@ export default class SyncCnblogPlugin extends Plugin {
 					return
 				}
 				// 检测同步文件夹
-				debugger
 				let sync_dir = this.app.vault.getAbstractFileByPath(CacheUtil.getSettings().location_posts)
-				if (sync_dir == null) {
+				if (sync_dir == null && CacheUtil.getSettings().location_posts != "") {
 					new Notice("文章同步目录不存在, 将按照默认设置进行同步!")
 					return
 				}

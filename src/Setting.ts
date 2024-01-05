@@ -41,7 +41,7 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 			.setName('blog_url')
 			.setDesc('博客园MetaWeblog访问地址')
 			.addText(text => text
-				.setPlaceholder('请输入你的参数')
+				.setPlaceholder('MetaWeblog访问地址')
 				.setValue(CacheUtil.getSettings().blog_url)
 				.onChange(async (value) => {
 					CacheUtil.getSettings().blog_url = value;
@@ -63,7 +63,7 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 			.setName('username')
 			.setDesc('MetaWeblog登录名')
 			.addText(text => text
-				.setPlaceholder('请输入你的参数')
+				.setPlaceholder('MetaWeblog登录名')
 				.setValue(CacheUtil.getSettings().username)
 				.onChange(async (value) => {
 					CacheUtil.getSettings().username = value;
@@ -73,7 +73,7 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 			.setName('password')
 			.setDesc('MetaWeblog访问令牌')
 			.addText(text => text
-				.setPlaceholder('请输入你的参数')
+				.setPlaceholder('MetaWeblog访问令牌')
 				.setValue(CacheUtil.getSettings().password)
 				.onChange(async (value) => {
 					CacheUtil.getSettings().password = value;
@@ -82,10 +82,11 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('location_posts')
-			.setDesc('文章同步目录')
+			.setDesc('填写规则: 1. 为空: 所有文章; 2. 指定目录:  格式为 目录名/子目录')
 			.addText(text => text
-				.setPlaceholder('请输入你的参数')
+				.setPlaceholder('例: 文件夹/同步文件夹')
 				.setValue(CacheUtil.getSettings().location_posts)
+
 				.onChange(async (value) => {
 					CacheUtil.getSettings().location_posts = value;
 					await CacheUtil.saveSettings();
