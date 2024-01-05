@@ -1,11 +1,13 @@
 import {
+	EmbedCache,
 	Notice,
 	Plugin,
 	TFile,
 } from 'obsidian';
 import {DEFAULT_SETTINGS, SyncCnblogSettingTab} from "./src/Setting";
 import {
-	findAllImg, findAllTags,
+	findAllEmbeds,
+	 findKeywords,
 	getAttachmentTFolder,
 	getMdContent, getThePost, getThePostByName, replaceImgLocalToNet,
 	uploadImgs, uploadPost
@@ -15,6 +17,7 @@ import CacheUtil from "./src/utils/CacheUtil";
 
 export default class SyncCnblogPlugin extends Plugin {
 	private static plugin_this: SyncCnblogPlugin;
+
 	async onload() {
 		// 初始化instance
 		await this.initPlug()
@@ -30,6 +33,10 @@ export default class SyncCnblogPlugin extends Plugin {
 		// 注册指令到右键的文件菜单
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
+				// 判断文件是否在同步目录下
+				if (!file.path.startsWith(CacheUtil.getSettings().location_posts)) {
+					return;
+				}
 				if (file instanceof TFile) {
 					if (file.extension === "md") {
 						menu.addItem((item) => {
@@ -38,24 +45,13 @@ export default class SyncCnblogPlugin extends Plugin {
 								.setIcon("upload")
 								.onClick(async () => {
 									let content = await getMdContent(file)
-									const imgPaths = findAllImg(file)
-									const tags: string[] | null = findAllTags(file);
+									const embeds:EmbedCache[] = findAllEmbeds(file)
 									let attachmentFolder = getAttachmentTFolder(file, CacheUtil.getSettings().location_attachments)
-									let urlAndLocalImgs = await uploadImgs(imgPaths, attachmentFolder, this)
+									let addUrlEmbeds = await uploadImgs(embeds, attachmentFolder, this)
 									// 网络地址替换本地地址
-									let replacedMd = await replaceImgLocalToNet(content, urlAndLocalImgs)
+									let replacedMd = await replaceImgLocalToNet(content, addUrlEmbeds)
 									let post = await getThePost(file, replacedMd)
-									if (tags) {
-										let mt_keywords = "";
-										tags.forEach(tag => {
-											if (mt_keywords === "") {
-												mt_keywords = tag.substring(1, tag.length)
-											} else {
-												mt_keywords = mt_keywords + "," + tag.substring(1, tag.length)
-											}
-										})
-										post.mt_keywords = mt_keywords;
-									}
+									post.mt_keywords = findKeywords(file)
 									// 上传文章
 									new Notice(await uploadPost(post))
 								});
@@ -66,30 +62,47 @@ export default class SyncCnblogPlugin extends Plugin {
 
 			}));
 		// 创建左侧图标, 点击时可测试插件是否可用
-		this.addRibbonIcon('dice', 'Sample Plugin', async () => {
+		this.addRibbonIcon('rss', '测试与博客园链接', async () => {
 			try {
+				// 检测网络, 以及博客相关参数
 				let blogs = await WeblogClient.getUsersBlogs()
 				if (blogs[0].blogName === undefined) {
 					new Notice("链接异常, 请检查网络及相关参数!")
-				}else {
-					new Notice("Hello, " + blogs[0].blogName + "!");
+					return
 				}
-			}catch (e) {
+				// 检测同步文件夹
+				debugger
+				let sync_dir = this.app.vault.getAbstractFileByPath(CacheUtil.getSettings().location_posts)
+				if (sync_dir == null) {
+					new Notice("文章同步目录不存在, 将按照默认设置进行同步!")
+					return
+				}
+				if (sync_dir instanceof TFile) {
+					new Notice("文章同步目录不是文件夹, 将按照默认设置进行同步!")
+					return
+				}
+				new Notice("Hello, " + blogs[0].blogName + "!");
+			} catch (e) {
 				new Notice("链接异常, 请检查网络及相关参数!")
 			}
 
 		});
 
 		this.registerEvent(this.app.vault.on('delete', (file) => {
-			// fixme 删除时应该告知用户是否同步删除博文, 现版本暂不支持
-			new Notice(""+file.name+"文章不会在博客园删除!")
+			if (file instanceof TFile) {
+				if (file.extension === "md") {
+					// fixme 删除时应该告知用户是否同步删除博文, 现版本暂不支持
+					new Notice("" + file.name + "文章不会在博客园删除!")
+				}
+			}
+
 		}));
 		this.registerEvent(this.app.vault.on('rename', async (newFile, oldPath) => {
-			if (newFile instanceof TFile ) {
+			if (newFile instanceof TFile) {
 				if (newFile.extension === "md") {
 					// @ts-ignore
 					let oldFileName = oldPath.split("/").pop().substring(0, oldPath.split("/").pop().lastIndexOf("."))
-					let post = await getThePostByName(oldFileName, "",false)
+					let post = await getThePostByName(oldFileName, "", false)
 					// 上传文章
 					if (post.postid !== undefined) {
 						post.title = newFile.basename
@@ -97,7 +110,6 @@ export default class SyncCnblogPlugin extends Plugin {
 					}
 				}
 			}
-
 
 
 		}));

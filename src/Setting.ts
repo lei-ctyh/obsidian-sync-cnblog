@@ -1,4 +1,4 @@
-import {App, PluginSettingTab, Setting} from "obsidian";
+import {App, Notice, PluginSettingTab, Setting} from "obsidian";
 import SyncCnblogPlugin from "../main";
 import CacheUtil from "./utils/CacheUtil";
 
@@ -8,6 +8,8 @@ export interface SyncCnblogSettings {
 	username: string;
 	password: string;
 	location_attachments: string;
+	// 需要同步的文章目录, 默认是所有文章
+	location_posts: string;
 
 }
 
@@ -17,8 +19,11 @@ export const DEFAULT_SETTINGS: SyncCnblogSettings = {
 	blog_id: "",
 	username: "",
 	password: "",
-	location_attachments: "./assets/${filename}"
+	location_attachments: "./assets/${filename}",
+	// 需要同步的文章目录, 默认是所有文章, 路径/子路径
+	location_posts: ""
 }
+
 export class SyncCnblogSettingTab extends PluginSettingTab {
 	plugin: SyncCnblogPlugin;
 
@@ -28,7 +33,7 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const { containerEl } = this;
+		const {containerEl} = this;
 
 		containerEl.empty();
 
@@ -72,6 +77,17 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 				.setValue(CacheUtil.getSettings().password)
 				.onChange(async (value) => {
 					CacheUtil.getSettings().password = value;
+					await CacheUtil.saveSettings();
+				}));
+
+		new Setting(containerEl)
+			.setName('location_posts')
+			.setDesc('文章同步目录')
+			.addText(text => text
+				.setPlaceholder('请输入你的参数')
+				.setValue(CacheUtil.getSettings().location_posts)
+				.onChange(async (value) => {
+					CacheUtil.getSettings().location_posts = value;
 					await CacheUtil.saveSettings();
 				}));
 	}
