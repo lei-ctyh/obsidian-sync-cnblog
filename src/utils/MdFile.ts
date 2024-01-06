@@ -1,14 +1,5 @@
 import SyncCnblogPlugin from "main";
-import {
-	arrayBufferToBase64,
-	CachedMetadata,
-	EmbedCache,
-	getAllTags,
-	Notice,
-	TAbstractFile,
-	TFile,
-	TFolder
-} from "obsidian";
+import {arrayBufferToBase64, CachedMetadata, EmbedCache, getAllTags, TAbstractFile, TFile, TFolder} from "obsidian";
 import {parseRespXml} from "./XmlUtil";
 import WeblogClient from "./WeblogClient";
 import {ApiType} from "../enum/ApiType";
@@ -173,8 +164,9 @@ export async function replaceImgLocalToNet(mdContent: string, embeds: Map<string
  * 获取当前同名文章的postid
  * @param file  当前选中文件
  * @param md md内容
+ * @param replaceMd 是否替换md内容
  */
-export async function getThePost(file: TFile, md: string): Promise<Post> {
+export async function getThePost(file: TFile, md: string, replaceMd: boolean = true): Promise<Post> {
 	let newPost = await getThePostByName(file.basename, md)
 	newPost.title = file.basename;
 	newPost.description = md;
@@ -227,4 +219,31 @@ export async function uploadPost(post: Post): Promise<string> {
 		}
 	}
 	return "上传文章失败"
+}
+
+
+/**
+ * 获取上传的图片
+ * @param post 文章对象
+ */
+export function getUploadedImgs(post: Post): [string, string] [] {
+	let md = post.description;
+	if (md) {
+		let imgs = md.match(/!\[.*?]\((.*?)\)/g);
+		if (imgs) {
+			let rtnImgs: [string, string][] = [];
+			for (let i = 0; i < imgs.length; i++) {
+				let img = imgs[i];
+				// 获取第一个捕获组
+				let matchArray = img.match(/\((.*?)\)/);
+				if (matchArray && matchArray.length > 0) {
+					let url = matchArray[1];
+					let desc = matchArray[0];
+					rtnImgs.push([desc, url]);
+					return rtnImgs;
+				}
+			}
+		}
+	}
+	return [["1", "1"], ["2", "2"]];
 }

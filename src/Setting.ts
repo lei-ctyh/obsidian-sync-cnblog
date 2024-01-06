@@ -1,4 +1,4 @@
-import {App, Notice, PluginSettingTab, Setting} from "obsidian";
+import {App, PluginSettingTab, Setting, TFolder} from "obsidian";
 import SyncCnblogPlugin from "../main";
 import CacheUtil from "./utils/CacheUtil";
 
@@ -10,6 +10,7 @@ export interface SyncCnblogSettings {
 	location_attachments: string;
 	// 需要同步的文章目录, 默认是所有文章
 	location_posts: string;
+	throttling_mode: boolean;
 
 }
 
@@ -21,7 +22,8 @@ export const DEFAULT_SETTINGS: SyncCnblogSettings = {
 	password: "",
 	location_attachments: "./assets/${filename}",
 	// 需要同步的文章目录, 默认是所有文章, 路径/子路径
-	location_posts: ""
+	location_posts: "",
+	throttling_mode: false
 }
 
 export class SyncCnblogSettingTab extends PluginSettingTab {
@@ -80,16 +82,34 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 					await CacheUtil.saveSettings();
 				}));
 
+		// 获取所有文章目录
+		let all_dir = this.plugin.app.vault.getAllLoadedFiles().filter((file) => file instanceof TFolder);
 		new Setting(containerEl)
 			.setName('location_posts')
-			.setDesc('填写规则: 1. 为空: 所有文章; 2. 指定目录:  格式为 目录名/子目录')
-			.addText(text => text
-				.setPlaceholder('例: 文件夹/同步文件夹')
-				.setValue(CacheUtil.getSettings().location_posts)
+			.setDesc('同步文章目录')
+			.setTooltip('同步文章目录, 默认是所有文章')
+			.addDropdown(dropdown => {
+				dropdown.selectEl.style.width = "165px";
+				all_dir.forEach((dir) => {
+					dropdown.addOption(dir.path, dir.path);
+				})
+				dropdown.setValue("/")
+					.onChange(async (value) => {
+						CacheUtil.getSettings().location_posts = value;
+						await CacheUtil.saveSettings();
+					})
+			});
 
+		new Setting(containerEl)
+			.setName('throttling_mode')
+			.setDesc('节流模式')
+			.addToggle(toggle => toggle
+				.setTooltip('节流后, 已上传图片不会再上传, 节省接口调用次数')
+				.setValue(CacheUtil.getSettings().throttling_mode)
 				.onChange(async (value) => {
-					CacheUtil.getSettings().location_posts = value;
+					CacheUtil.getSettings().throttling_mode = value;
 					await CacheUtil.saveSettings();
-				}));
+				}))
+
 	}
 }

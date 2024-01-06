@@ -1,16 +1,16 @@
-import {
-	EmbedCache,
-	Notice,
-	Plugin,
-	TFile,
-} from 'obsidian';
+import {EmbedCache, Notice, Plugin, TFile,} from 'obsidian';
 import {DEFAULT_SETTINGS, SyncCnblogSettingTab} from "./src/Setting";
 import {
 	findAllEmbeds,
 	findKeywords,
 	getAttachmentTFolder,
-	getMdContent, getThePost, getThePostByName, replaceImgLocalToNet,
-	uploadImgs, uploadPost
+	getMdContent,
+	getThePost,
+	getThePostByName,
+	getUploadedImgs,
+	replaceImgLocalToNet,
+	uploadImgs,
+	uploadPost
 } from "./src/utils/MdFile";
 import WeblogClient from "./src/utils/WeblogClient";
 import CacheUtil from "./src/utils/CacheUtil";
@@ -47,10 +47,12 @@ export default class SyncCnblogPlugin extends Plugin {
 									let content = await getMdContent(file)
 									const embeds: EmbedCache[] = findAllEmbeds(file)
 									let attachmentFolder = getAttachmentTFolder(file, CacheUtil.getSettings().location_attachments)
+									let post = await getThePost(file, "", false)
+									// 获取已上传的所有图片
+									let uploadedImgs = await getUploadedImgs(post)
 									let addUrlEmbeds = await uploadImgs(embeds, attachmentFolder, this)
 									// 网络地址替换本地地址
 									let replacedMd = await replaceImgLocalToNet(content, addUrlEmbeds)
-									let post = await getThePost(file, replacedMd)
 									post.mt_keywords = findKeywords(file)
 									// 上传文章
 									new Notice(await uploadPost(post))
