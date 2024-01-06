@@ -93,7 +93,10 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 				all_dir.forEach((dir) => {
 					dropdown.addOption(dir.path, dir.path);
 				})
-				dropdown.setValue("/")
+				if (CacheUtil.getSettings().location_posts === "") {
+					dropdown.setValue("/");
+				}
+				dropdown.setValue(CacheUtil.getSettings().location_posts)
 					.onChange(async (value) => {
 						CacheUtil.getSettings().location_posts = value;
 						await CacheUtil.saveSettings();

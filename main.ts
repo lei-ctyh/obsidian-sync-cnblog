@@ -44,18 +44,7 @@ export default class SyncCnblogPlugin extends Plugin {
 								.setTitle("同步到博客园")
 								.setIcon("upload")
 								.onClick(async () => {
-									let content = await getMdContent(file)
-									const embeds: EmbedCache[] = findAllEmbeds(file)
-									let attachmentFolder = getAttachmentTFolder(file, CacheUtil.getSettings().location_attachments)
-									let post = await getThePost(file, "", false)
-									// 获取已上传的所有图片
-									let uploadedImgs = await getUploadedImgs(post)
-									let addUrlEmbeds = await uploadImgs(embeds, attachmentFolder, this)
-									// 网络地址替换本地地址
-									let replacedMd = await replaceImgLocalToNet(content, addUrlEmbeds)
-									post.mt_keywords = findKeywords(file)
-									// 上传文章
-									new Notice(await uploadPost(post))
+									await this.rightClickToUpload(file)
 								});
 						});
 					}
@@ -137,6 +126,28 @@ export default class SyncCnblogPlugin extends Plugin {
 		// 这添加了一个设置选项卡，以便用户可以配置插件的各个方面
 		this.addSettingTab(new SyncCnblogSettingTab(this.app, this));
 		CacheUtil.setSettings(Object.assign({}, DEFAULT_SETTINGS, await this.loadData()));
+	}
+
+	private async rightClickToUpload(file: TFile) {
+		let content = await getMdContent(file)
+		console.log("第一步: 获取文章内容成功")
+		const embeds: EmbedCache[] = findAllEmbeds(file)
+		console.log("第二步: 获取图片嵌入信息成功")
+		let attachmentFolder = getAttachmentTFolder(file, CacheUtil.getSettings().location_attachments)
+		console.log("第三步: 获取附件目录成功")
+		let post = await getThePost(file, "", false)
+		console.log("第四步: 获取文章信息成功")
+		// 获取已上传的所有图片
+		let uploadedImgs: [string, string] [] = getUploadedImgs(post)
+		console.log("第五步: 获取已上传图片成功")
+		let addUrlEmbeds = await uploadImgs(embeds, attachmentFolder, uploadedImgs, this)
+		// 网络地址替换本地地址
+		let replacedMd = await replaceImgLocalToNet(content, addUrlEmbeds)
+		post.description = replacedMd
+		post.title = file.basename
+		post.mt_keywords = findKeywords(file)
+		// 上传文章
+		new Notice(await uploadPost(post))
 	}
 }
 

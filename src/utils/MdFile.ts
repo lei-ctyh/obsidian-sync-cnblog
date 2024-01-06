@@ -93,20 +93,17 @@ export function getImgFromAttachmentFolder(filepath: string, abstractFile: TAbst
 	return null;
 }
 
-export async function uploadImgs(embeds: EmbedCache[], attachmentFolder: TFolder, plugin: SyncCnblogPlugin): Promise<Map<string, string>[]> {
+export async function uploadImgs(embeds: EmbedCache[], attachmentFolder: TFolder, uploadImgs: [string, string] [], plugin: SyncCnblogPlugin): Promise<Map<string, string>[]> {
 	let rtnImgs: Map<string, string>[] = [];
-
 	// 批量处理
 	const imgBatchPromises = embeds.map(async (embed) => {
 		let img = getImgFromAttachmentFolder(embed.link, attachmentFolder);
 		if (img != null) {
-			let imgContent = await plugin.app.vault.readBinary(img);
-			let respMag = await WeblogClient.newMediaObject(img.name, img.extension, arrayBufferToBase64(imgContent));
-			if (respMag.indexOf("上传失败, Response status code does not indicate success: 403 (Forbidden).") > -1) {
-				return;
-			}
-			let urlData = parseRespXml(ApiType.NEWMEDIAOBJECT, respMag);
-
+			/**
+			 * 逻辑解释
+			 * 如果 网络的图片描述中存在当前嵌入图片的实际连接,
+			 * 则直接使用网络图片地址作为本图片的链接
+			 */
 			let map = new Map();
 			map.set("link", embed.link);
 			map.set("displayText", embed.displayText);
@@ -117,8 +114,29 @@ export async function uploadImgs(embeds: EmbedCache[], attachmentFolder: TFolder
 			map.set("end_line", embed.position.end.line);
 			map.set("end_col", embed.position.end.col);
 			map.set("end_offset", embed.position.end.offset);
-			map.set("url", urlData.url);
+
+			let isUpload = false
+			uploadImgs.forEach((img) => {
+				let netAltText = img[0]
+				let netImgUrl = img[1]
+				if (netAltText == embed.link) {
+					map.set("url", netImgUrl);
+					isUpload = true
+				}
+			})
+
+			if (!isUpload) {
+				let imgContent = await plugin.app.vault.readBinary(img);
+				console.log("上传图片：" + embed.link);
+				let respMag = await WeblogClient.newMediaObject(img.name, img.extension, arrayBufferToBase64(imgContent));
+				if (respMag.indexOf("上传失败, Response status code does not indicate success: 403 (Forbidden).") > -1) {
+					return;
+				}
+				let urlData = parseRespXml(ApiType.NEWMEDIAOBJECT, respMag);
+				map.set("url", urlData.url);
+			}
 			rtnImgs.push(map);
+			console.log("本地嵌入的图片：" + embed.link + "对应的网络连接：" + map.get("url"));
 		}
 	});
 	// 使用 Promise.all 进行并行处理
@@ -137,7 +155,7 @@ export async function replaceImgLocalToNet(mdContent: string, embeds: Map<string
 		return Number(b.get("start_offset")) - Number(a.get("start_offset"))
 	})
 	for (const embed of embeds) {
-		let link = embed.get("link");
+		let link = String(embed.get("link"));
 		let displayText = embed.get("displayText");
 		let original = embed.get("original");
 		let url = embed.get("url");
@@ -150,6 +168,8 @@ export async function replaceImgLocalToNet(mdContent: string, embeds: Map<string
 		// 文章倒叙替换图片地址
 		let selectedContent = mdContent.substring(Number(start_offset), Number(end_offset));
 		if (url != undefined) {
+			// 替换描述
+			selectedContent = selectedContent.replace(/!\[.*?]/g, "![" + link + "]");
 			selectedContent = selectedContent.replace(/\((.*?)\)/g, '(' + url + ')');
 		}
 		mdContent = mdContent.substring(0, start_offset) + selectedContent + mdContent.substring(end_offset);
@@ -167,9 +187,8 @@ export async function replaceImgLocalToNet(mdContent: string, embeds: Map<string
  * @param replaceMd 是否替换md内容
  */
 export async function getThePost(file: TFile, md: string, replaceMd: boolean = true): Promise<Post> {
-	let newPost = await getThePostByName(file.basename, md)
+	let newPost = await getThePostByName(file.basename, md, replaceMd)
 	newPost.title = file.basename;
-	newPost.description = md;
 	// 时间戳转日期 20231219T22:55:00
 	let dateCreated = new Date(file.stat.ctime)
 	let year = dateCreated.getFullYear();
@@ -228,22 +247,23 @@ export async function uploadPost(post: Post): Promise<string> {
  */
 export function getUploadedImgs(post: Post): [string, string] [] {
 	let md = post.description;
+	let rtnImgs: [string, string][] = [];
+	debugger
 	if (md) {
-		let imgs = md.match(/!\[.*?]\((.*?)\)/g);
+		debugger
+		let imgs = md.match(/!\[(.*?)\]\((.*?)\)/g);
 		if (imgs) {
-			let rtnImgs: [string, string][] = [];
 			for (let i = 0; i < imgs.length; i++) {
 				let img = imgs[i];
 				// 获取第一个捕获组
 				let matchArray = img.match(/\((.*?)\)/);
 				if (matchArray && matchArray.length > 0) {
-					let url = matchArray[1];
-					let desc = matchArray[0];
-					rtnImgs.push([desc, url]);
-					return rtnImgs;
+					let netAltText = matchArray[1];
+					let netImgUrl = matchArray[0];
+					rtnImgs.push([netAltText, netImgUrl]);
 				}
 			}
 		}
 	}
-	return [["1", "1"], ["2", "2"]];
+	return rtnImgs;
 }
