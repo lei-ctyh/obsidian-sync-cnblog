@@ -1,9 +1,8 @@
 import {EmbedCache, Notice, Plugin, TFile,} from 'obsidian';
-import {DEFAULT_SETTINGS, SyncCnblogSettingTab} from "./src/Setting";
+import {DEFAULT_SETTINGS, SyncCnblogSettingTab} from "./Setting";
 import {
 	findAllEmbeds,
 	findKeywords,
-	getAttachmentTFolder,
 	getMdContent,
 	getThePost,
 	getThePostByName,
@@ -11,9 +10,9 @@ import {
 	replaceImgLocalToNet,
 	uploadImgs,
 	uploadPost
-} from "./src/utils/MdFile";
-import WeblogClient from "./src/utils/WeblogClient";
-import CacheUtil from "./src/utils/CacheUtil";
+} from "./utils/MdFile";
+import WeblogClient from "./utils/WeblogClient";
+import CacheUtil from "./utils/CacheUtil";
 
 export default class SyncCnblogPlugin extends Plugin {
 	private static plugin_this: SyncCnblogPlugin;
@@ -92,7 +91,7 @@ export default class SyncCnblogPlugin extends Plugin {
 				if (newFile.extension === "md") {
 					// @ts-ignore
 					let oldFileName = oldPath.split("/").pop().substring(0, oldPath.split("/").pop().lastIndexOf("."))
-					let post = await getThePostByName(oldFileName, "", false)
+					let post = await getThePostByName(oldFileName)
 					// 上传文章
 					if (post.postid !== undefined) {
 						post.title = newFile.basename
@@ -133,21 +132,21 @@ export default class SyncCnblogPlugin extends Plugin {
 		console.log("第一步: 获取文章内容成功")
 		const embeds: EmbedCache[] = findAllEmbeds(file)
 		console.log("第二步: 获取图片嵌入信息成功")
-		let attachmentFolder = getAttachmentTFolder(file, CacheUtil.getSettings().location_attachments)
-		console.log("第三步: 获取附件目录成功")
-		let post = await getThePost(file, "", false)
-		console.log("第四步: 获取文章信息成功")
+		let post = await getThePost(file)
+		console.log("第三步: 获取文章信息成功")
 		// 获取已上传的所有图片
 		let uploadedImgs: [string, string] [] = getUploadedImgs(post)
-		console.log("第五步: 获取已上传图片成功")
-		let addUrlEmbeds = await uploadImgs(embeds, attachmentFolder, uploadedImgs, this)
+		console.log("第四步: 获取已上传图片信息成功")
+		let addUrlEmbeds = await uploadImgs(embeds, uploadedImgs,file, this)
 		// 网络地址替换本地地址
-		let replacedMd = await replaceImgLocalToNet(content, addUrlEmbeds)
-		post.description = replacedMd
+		post.description = await replaceImgLocalToNet(content, addUrlEmbeds)
+		console.log("第六步: 替换图片地址成功")
 		post.title = file.basename
 		post.mt_keywords = findKeywords(file)
+		console.log("第七步: 获取文章标签成功")
 		// 上传文章
 		new Notice(await uploadPost(post))
+		console.log("第八步: 上传文章成功")
 	}
 }
 

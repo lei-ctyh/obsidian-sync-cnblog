@@ -1,5 +1,5 @@
 import {DEFAULT_SETTINGS, SyncCnblogSettings} from "../Setting";
-import SyncCnblogPlugin from "../../main";
+import SyncCnblogPlugin from "../main";
 export default class CacheUtil {
 	private static settings: SyncCnblogSettings;
 	public static getSettings(): SyncCnblogSettings{
