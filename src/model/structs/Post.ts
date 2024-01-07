@@ -29,7 +29,7 @@ export class Post {
         let rtnXml = "";
         let members: XmlMember[] = [];
         if (this.description) {
-            members.push(new XmlMember('description', 'string', "<![CDATA[" + this.description + "]]"));
+            members.push(new XmlMember('description', 'string', "<![CDATA[" + this.description + "]]>"));
         }
         if (this.title) {
             members.push(new XmlMember('title', 'string', this.title));

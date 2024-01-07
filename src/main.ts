@@ -33,7 +33,8 @@ export default class SyncCnblogPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
 				// 判断文件是否在同步目录下
-				if (!file.path.startsWith(CacheUtil.getSettings().location_posts)) {
+				let location_posts = CacheUtil.getSettings().location_posts
+				if (!file.path.startsWith(location_posts) && location_posts!= "/" && location_posts != "" && location_posts!= undefined) {
 					return;
 				}
 				if (file instanceof TFile) {
