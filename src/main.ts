@@ -21,14 +21,6 @@ export default class SyncCnblogPlugin extends Plugin {
 		// 初始化instance
 		await this.initPlug()
 
-		// 添加指令到ctrl+p的控制面板
-		this.addCommand({
-			id: "sync_cnblog",
-			name: "sync_cnblog",
-			callback: () => {
-			},
-		});
-
 		// 注册指令到右键的文件菜单
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
@@ -130,24 +122,17 @@ export default class SyncCnblogPlugin extends Plugin {
 
 	private async rightClickToUpload(file: TFile) {
 		let content = await getMdContent(file)
-		console.log("第一步: 获取文章内容成功")
 		const embeds: EmbedCache[] = findAllEmbeds(file)
-		console.log("第二步: 获取图片嵌入信息成功")
 		let post = await getThePost(file)
-		console.log("第三步: 获取文章信息成功")
 		// 获取已上传的所有图片
 		let uploadedImgs: [string, string] [] = getUploadedImgs(post)
-		console.log("第四步: 获取已上传图片信息成功")
 		let addUrlEmbeds = await uploadImgs(embeds, uploadedImgs,file, this)
 		// 网络地址替换本地地址
 		post.description = await replaceImgLocalToNet(content, addUrlEmbeds)
-		console.log("第六步: 替换图片地址成功")
 		post.title = file.basename
 		post.mt_keywords = findKeywords(file)
-		console.log("第七步: 获取文章标签成功")
 		// 上传文章
 		new Notice(await uploadPost(post))
-		console.log("第八步: 上传文章成功")
 	}
 }
 

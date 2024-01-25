@@ -33,12 +33,9 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 	}
 
 	display(): void {
-		const {containerEl} = this;
-		containerEl.empty();
-		containerEl.createEl("h2", {text: "Sync Cnblog Settings"});
-		const contentDiv = containerEl.createEl("div");
-		contentDiv.innerHTML = this.generateIcon();
-		new Setting(containerEl)
+		const {containerEl: contentEl} = this;
+		contentEl.empty();
+		new Setting(contentEl)
 			.setName('blog_url')
 			.setDesc('博客园MetaWeblog访问地址')
 			.addText(text => text
@@ -48,7 +45,7 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 					CacheUtil.getSettings().blog_url = value;
 					await CacheUtil.saveSettings();
 				}));
-		new Setting(containerEl)
+		new Setting(contentEl)
 			.setName('username')
 			.setDesc('MetaWeblog登录名')
 			.addText(text => text
@@ -58,7 +55,7 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 					CacheUtil.getSettings().username = value;
 					await CacheUtil.saveSettings();
 				}));
-		new Setting(containerEl)
+		new Setting(contentEl)
 			.setName('password')
 			.setDesc('MetaWeblog访问令牌')
 			.addText(text => text
@@ -71,7 +68,7 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 
 		// 获取所有文章目录
 		let all_dir = this.plugin.app.vault.getAllLoadedFiles().filter((file) => file instanceof TFolder);
-		new Setting(containerEl)
+		new Setting(contentEl)
 			.setName('location_posts')
 			.setDesc('同步文章目录')
 			.setTooltip('同步文章目录, 默认是所有文章')
@@ -92,7 +89,7 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 				})
 			});
 
-		new Setting(containerEl)
+		new Setting(contentEl)
 			.setName('throttling_mode')
 			.setDesc('节流模式')
 			.addToggle(toggle => toggle
@@ -102,6 +99,13 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 					CacheUtil.getSettings().throttling_mode = value;
 					await CacheUtil.saveSettings();
 				}))
+
+		const contentDiv = contentEl.createEl("div");
+		contentDiv.style.display = "flex";
+		contentDiv.style.paddingTop = '15px';
+		contentDiv.style.borderTop = "1px solid #e6e6e6";
+		contentDiv.innerHTML = this.generateIcon();
+
 
 	}
 

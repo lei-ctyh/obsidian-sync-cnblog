@@ -6,7 +6,7 @@ on:
             - "*"
 
 env:
-    PLUGIN_NAME: sync-cnblog # Change this to match the id of your plugin.
+    PLUGIN_NAME: CnblogHelper # Change this to match the id of your plugin.
 
 jobs:
     build:

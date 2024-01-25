@@ -8,7 +8,6 @@ import CacheUtil from "./CacheUtil";
 
 export async function getMdContent(file: TFile): Promise<string> {
 	const {vault} = this.app;
-	vault.getMarkdownFiles()
 	return await vault.cachedRead(file);
 }
 
@@ -117,7 +116,6 @@ export async function uploadImgs(embeds: EmbedCache[], uploadImgs: [string, stri
 
 				if (!isUpload) {
 					let imgContent = await plugin.app.vault.readBinary(img);
-					console.log("上传图片：" + embed.link);
 					let respMag = await WeblogClient.newMediaObject(img.name, img.extension, arrayBufferToBase64(imgContent));
 					if (respMag.indexOf("上传失败, Response status code does not indicate success: 403 (Forbidden).") > -1) {
 						return;
@@ -131,7 +129,6 @@ export async function uploadImgs(embeds: EmbedCache[], uploadImgs: [string, stri
 			}
 
 			rtnImgs.push(map);
-			console.log("本地嵌入的图片：" + embed.link + "对应的网络连接：" + map.get("url"));
 		}
 	});
 	// 使用 Promise.all 进行并行处理
