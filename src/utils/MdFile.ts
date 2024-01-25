@@ -67,11 +67,23 @@ export function getImg(embed: EmbedCache, file: TFile): TFile | null {
 	if (imgLink.startsWith("./")) {
 		imgLink = imgLink.substring(2);
 	}
+	// 父级路径找
 	if (currentPath != null) {
 		let searchFile = file.vault.getAbstractFileByPath(normalizePath(currentPath.path + "/" + imgLink));
 		if (searchFile != null && searchFile instanceof TFile) {
 			return searchFile;
 		}
+	}
+	// 找不到开启全局搜索
+	let allFiles = file.vault.getAllLoadedFiles();
+	for (let i = 0; i < allFiles.length; i++) {
+		let searchFile = allFiles[i];
+		if (searchFile instanceof TFile) {
+			if (searchFile.path.endsWith(imgLink)) {
+				return searchFile;
+			}
+		}
+
 	}
 	return null;
 }
@@ -117,7 +129,7 @@ export async function uploadImgs(embeds: EmbedCache[], uploadImgs: [string, stri
 				if (!isUpload) {
 					let imgContent = await plugin.app.vault.readBinary(img);
 					let respMag = await WeblogClient.newMediaObject(img.name, img.extension, arrayBufferToBase64(imgContent));
-					if (respMag.indexOf("上传失败, Response status code does not indicate success: 403 (Forbidden).") > -1) {
+					if (respMag.indexOf("失败") > -1) {
 						return;
 					}
 					let urlData = parseRespXml(ApiType.NEWMEDIAOBJECT, respMag);
