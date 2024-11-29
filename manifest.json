@@ -1,6 +1,6 @@
 {
 	"id": "obsidian-sync-cnblog",
-	"name": "obsidian-sync-cnblog",
+	"name": "Sync Cnblog",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "同步obsidian笔记到博客园",
