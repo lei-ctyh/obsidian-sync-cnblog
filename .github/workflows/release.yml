@@ -6,7 +6,7 @@ on:
             - "*"
 
 env:
-    PLUGIN_NAME: CnblogHelper # Change this to match the id of your plugin.
+    PLUGIN_NAME: obsidian-sync-cnblog # Change this to match the id of your plugin.
 
 jobs:
     build:

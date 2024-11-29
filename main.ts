@@ -1,5 +1,5 @@
 import {EmbedCache, Notice, Plugin, TFile,} from 'obsidian';
-import {DEFAULT_SETTINGS, SyncCnblogSettingTab} from "./Setting";
+import {DEFAULT_SETTINGS, SyncCnblogSettingTab} from "./src/Setting";
 import {
 	findAllEmbeds,
 	findKeywords,
@@ -10,9 +10,8 @@ import {
 	replaceImgLocalToNet,
 	uploadImgs,
 	uploadPost
-} from "./utils/MdFile";
-import WeblogClient from "./utils/WeblogClient";
-import CacheUtil from "./utils/CacheUtil";
+} from "./src/utils/MdFile";
+import CacheUtil from "./src/utils/CacheUtil";
 
 export default class SyncCnblogPlugin extends Plugin {
 	private static plugin_this: SyncCnblogPlugin;
@@ -44,36 +43,11 @@ export default class SyncCnblogPlugin extends Plugin {
 				}
 
 			}));
-		// 创建左侧图标, 点击时可测试插件是否可用
-		this.addRibbonIcon('rss', '测试与博客园链接', async () => {
-			try {
-				// 检测网络, 以及博客相关参数
-				let blogs = await WeblogClient.getUsersBlogs()
-				if (blogs[0].blogName === undefined) {
-					new Notice("链接异常, 请检查网络及相关参数!")
-					return
-				}
-				// 检测同步文件夹
-				let sync_dir = this.app.vault.getAbstractFileByPath(CacheUtil.getSettings().location_posts)
-				if (sync_dir == null && CacheUtil.getSettings().location_posts != "") {
-					new Notice("文章同步目录不存在, 将按照默认设置进行同步!")
-					return
-				}
-				if (sync_dir instanceof TFile) {
-					new Notice("文章同步目录不是文件夹, 将按照默认设置进行同步!")
-					return
-				}
-				new Notice("Hello, " + blogs[0].blogName + "!");
-			} catch (e) {
-				new Notice("链接异常, 请检查网络及相关参数!")
-			}
-
-		});
 
 		this.registerEvent(this.app.vault.on('delete', (file) => {
 			if (file instanceof TFile) {
 				if (file.extension === "md") {
-					// fixme 删除时应该告知用户是否同步删除博文, 现版本暂不支持
+					// TODO 删除时应该告知用户是否同步删除博文, 现版本暂不支持
 					new Notice("" + file.name + "文章不会在博客园删除!")
 				}
 			}
@@ -115,7 +89,7 @@ export default class SyncCnblogPlugin extends Plugin {
 		if (!SyncCnblogPlugin.plugin_this) {
 			SyncCnblogPlugin.plugin_this = this;
 		}
-		// 这添加了一个设置选项卡，以便用户可以配置插件的各个方面
+		// 添加选项设置面板
 		this.addSettingTab(new SyncCnblogSettingTab(this.app, this));
 		CacheUtil.setSettings(Object.assign({}, DEFAULT_SETTINGS, await this.loadData()));
 	}

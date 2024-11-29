@@ -1,4 +1,4 @@
-import SyncCnblogPlugin from "src/main";
+import SyncCnblogPlugin from "main";
 import {arrayBufferToBase64, CachedMetadata, EmbedCache, getAllTags, normalizePath, TFile} from "obsidian";
 import {parseRespXml} from "./XmlUtil";
 import WeblogClient from "./WeblogClient";

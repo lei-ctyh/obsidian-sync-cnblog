@@ -1,7 +1,7 @@
 {
-	"name": "CnblogHelper",
-	"version": "1.2.0",
-	"description": "同步ob文章到博客园",
+	"name": "obsidian-sync-cnblog",
+	"version": "1.0.0",
+	"description": "同步obsidian笔记到博客园",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
