@@ -78,7 +78,6 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 			.setDesc('选择文章目录，同步文章时将只上传该目录下的文章')
 			.setTooltip('同步文章目录, 默认是所有文章')
 			.addDropdown(dropdown => {
-				dropdown.selectEl.style.width = "165px";
 				all_dir.forEach((dir) => {
 					dropdown.addOption(dir.path, dir.path);
 				})
