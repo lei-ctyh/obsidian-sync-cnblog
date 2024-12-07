@@ -3,7 +3,7 @@
 	"name": "Sync Cnblog",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "同步ob笔记到博客园",
+	"description": "将笔记同步到博客园",
 	"author": "zhanglei",
 	"authorUrl": "https://www.cnblogs.com/aaalei/",
 	"fundingUrl": "",

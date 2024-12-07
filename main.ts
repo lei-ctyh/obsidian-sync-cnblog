@@ -24,8 +24,8 @@ export default class SyncCnblogPlugin extends Plugin {
 		this.registerEvent(
 			this.app.workspace.on("file-menu", (menu, file) => {
 				// 判断文件是否在同步目录下
-				let location_posts = CacheUtil.getSettings().location_posts
-				if (!file.path.startsWith(location_posts) && location_posts!= "/" && location_posts != "" && location_posts!= undefined) {
+				let locationPosts = CacheUtil.getSettings().locationPosts
+				if (!file.path.startsWith(locationPosts) && locationPosts != "/" && locationPosts != "" && locationPosts != undefined) {
 					return;
 				}
 				if (file instanceof TFile) {
@@ -74,7 +74,7 @@ export default class SyncCnblogPlugin extends Plugin {
 
 	onunload() {
 		// 卸载时说再见
-		new Notice("Goodbye !")
+		// new Notice("Goodbye !")
 	}
 
 

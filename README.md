@@ -56,7 +56,7 @@ date: 2023-12-19
 
 ![](docs/README.assets/2395785-20240106094129575-618944768.png)
 
-> 进入 `obsidian-sync-cnblog`选项卡，该选项卡中的除去 `location_posts`以外的所有参数均要参考自己的博客园账号，按照实际需求配置
+> 进入 `obsidian-sync-cnblog`选项卡，该选项卡中的除去 `locationPosts`以外的所有参数均要参考自己的博客园账号，按照实际需求配置
 
 ![image-20241129133338145](docs/README.assets/image-20241129133338145.png)
 
@@ -66,8 +66,8 @@ date: 2023-12-19
 ![](docs/README.assets/2395785-20240106094129545-831763769.png)
 
 - 勾选允许 MetaWeblog 博客客户端访问
--  参考上图配置如下参数  `blog_url`，`username`，`password`
-- `location_posts` 文章的同步目录，默认为仓库的根目录
+- 参考上图配置如下参数  `blogUrl`，`username`，`password`
+- `locationPosts` 文章的同步目录，默认为仓库的根目录
 
 
 

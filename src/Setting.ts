@@ -4,24 +4,24 @@ import CacheUtil from "./utils/CacheUtil";
 import WeblogClient from "./utils/WeblogClient";
 
 export interface SyncCnblogSettings {
-	blog_url: string;
+	blogUrl: string;
 	blog_id: string;
 	username: string;
 	password: string;
 	// 需要同步的文章目录, 默认是所有文章
-	location_posts: string;
-	throttling_mode: boolean;
+	locationPosts: string;
+	throttlingMode: boolean;
 }
 
 export const DEFAULT_SETTINGS: SyncCnblogSettings = {
-	blog_url: "",
+	blogUrl: "",
 	// blog_id 链接成功可以回写，暂时没用到
 	blog_id: "",
 	username: "",
 	password: "",
 	// 需要同步的文章目录, 默认是所有文章, 路径/子路径
-	location_posts: "/",
-	throttling_mode: true,
+	locationPosts: "/",
+	throttlingMode: true,
 }
 
 export class SyncCnblogSettingTab extends PluginSettingTab {
@@ -37,13 +37,13 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 		contentEl.empty();
 
 		new Setting(contentEl)
-			.setName('blog_url')
+			.setName('blogUrl')
 			.setDesc('MetaWeblog访问地址')
 			.addText(text => text
 				.setPlaceholder('MetaWeblog访问地址')
-				.setValue(CacheUtil.getSettings().blog_url)
+				.setValue(CacheUtil.getSettings().blogUrl)
 				.onChange(async (value) => {
-					CacheUtil.getSettings().blog_url = value;
+					CacheUtil.getSettings().blogUrl = value;
 					await CacheUtil.saveSettings();
 				}));
 		new Setting(contentEl)
@@ -74,43 +74,43 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 		// 获取所有文章目录
 		let all_dir = this.plugin.app.vault.getAllLoadedFiles().filter((file) => file instanceof TFolder);
 		new Setting(contentEl)
-			.setName('location_posts')
+			.setName('locationPosts')
 			.setDesc('选择文章目录，同步文章时将只上传该目录下的文章')
 			.setTooltip('同步文章目录, 默认是所有文章')
 			.addDropdown(dropdown => {
 				all_dir.forEach((dir) => {
 					dropdown.addOption(dir.path, dir.path);
 				})
-				if (CacheUtil.getSettings().location_posts === "" || CacheUtil.getSettings().location_posts === undefined) {
+				if (CacheUtil.getSettings().locationPosts === "" || CacheUtil.getSettings().locationPosts === undefined) {
 					dropdown.setValue("/");
 				} else {
-					dropdown.setValue(CacheUtil.getSettings().location_posts)
+					dropdown.setValue(CacheUtil.getSettings().locationPosts)
 
 				}
 				dropdown.onChange(async (value) => {
-					CacheUtil.getSettings().location_posts = value;
+					CacheUtil.getSettings().locationPosts = value;
 					await CacheUtil.saveSettings();
 				})
 			});
 
 		new Setting(contentEl)
-			.setName('throttling_mode')
+			.setName('throttlingMode')
 			.setDesc('启用节流模式后，已上传的同名图片不会再上传，节省接口调用次数')
 			.addToggle(toggle => toggle
 				.setTooltip('启用节流模式后，已上传的同名图片不会再上传，节省接口调用次数')
-				.setValue(CacheUtil.getSettings().throttling_mode)
+				.setValue(CacheUtil.getSettings().throttlingMode)
 				.onChange(async (value) => {
-					CacheUtil.getSettings().throttling_mode = value;
+					CacheUtil.getSettings().throttlingMode = value;
 					await CacheUtil.saveSettings();
 				}));
 
 		new Setting(contentEl)
-			.setName('测试链接')
+			.setName('testLink')
 			.setDesc('测试博客园MetaWeblog的链接是否可用')
 			.addButton(button => button
 				.setButtonText('测试')
 				.onClick(async () => {
-					if (!CacheUtil.getSettings().blog_url || !CacheUtil.getSettings().username || !CacheUtil.getSettings().password) {
+					if (!CacheUtil.getSettings().blogUrl || !CacheUtil.getSettings().username || !CacheUtil.getSettings().password) {
 						new Notice('请先配置博客园MetaWeblog的链接、登录名、密码');
 					} else {
 						try {
@@ -121,8 +121,8 @@ export class SyncCnblogSettingTab extends PluginSettingTab {
 								return
 							}
 							// 检测同步文件夹
-							let sync_dir = this.app.vault.getAbstractFileByPath(CacheUtil.getSettings().location_posts)
-							if (sync_dir == null && CacheUtil.getSettings().location_posts != "") {
+							let sync_dir = this.app.vault.getAbstractFileByPath(CacheUtil.getSettings().locationPosts)
+							if (sync_dir == null && CacheUtil.getSettings().locationPosts != "") {
 								new Notice("文章同步目录不存在, 将按照默认设置进行同步!")
 								return
 							}

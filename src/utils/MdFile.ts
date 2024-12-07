@@ -7,18 +7,23 @@ import {Post} from "../model/structs/Post";
 import CacheUtil from "./CacheUtil";
 
 export async function getMdContent(file: TFile): Promise<string> {
-	const {vault} = this.app;
+	const {vault} = SyncCnblogPlugin.getPluginThis().app;
 	return await vault.cachedRead(file);
 }
 
 export function findAllEmbeds(file: TFile): EmbedCache[] {
-	const {metadataCache} = this.app;
-	let {embeds}: CachedMetadata = metadataCache.getFileCache(file)
-	if (embeds == undefined) {
-		return [];
+	const {metadataCache} = SyncCnblogPlugin.getPluginThis().app;
+	const cache = metadataCache.getFileCache(file);
+
+	// 检查 cache 是否为 null
+	if (cache === null) {
+		return []; // 或者处理其他逻辑
 	}
-	return embeds
+
+	const {embeds} = cache;
+	return embeds ? embeds : []; // 返回 embeds 或空数组
 }
+
 
 
 /**
@@ -26,26 +31,20 @@ export function findAllEmbeds(file: TFile): EmbedCache[] {
  * @param file md文件
  */
 export function findKeywords(file: TFile): string {
-	let tags: string[] | null;
-	const {metadataCache} = this.app;
-	const metadata: CachedMetadata = metadataCache.getFileCache(file)
-	if (metadata == null) {
-		tags = [];
-	} else {
-		tags = getAllTags(metadata);
+	const {metadataCache} = SyncCnblogPlugin.getPluginThis().app;
+	const metadata: CachedMetadata | null = metadataCache.getFileCache(file);
+
+	// 使用一个空数组作为默认值
+	const tags: string[] | null = metadata ? getAllTags(metadata) : [];
+	if (tags == null) {
+		return "";
 	}
-	let mt_keywords = "";
-	if (tags) {
-		tags.forEach(tag => {
-			if (mt_keywords === "") {
-				mt_keywords = tag.substring(1, tag.length)
-			} else {
-				mt_keywords = mt_keywords + "," + tag.substring(1, tag.length)
-			}
-		})
-	}
-	return mt_keywords
+	// 使用 join 方法更简洁地构建 mt_keywords
+	return tags.length > 0 ? tags.map(tag => tag.substring(1)).join(",") : "";
 }
+
+
+
 
 /**
  * 获取附件中的图片TFile对象
@@ -57,35 +56,9 @@ export function getImg(embed: EmbedCache, file: TFile): TFile | null {
 	// 当前路径
 	let currentPath = file.parent
 	let imgLink = embed.link;
-	while (imgLink.startsWith("../")) {
-		if (currentPath != null) {
-			currentPath = currentPath.parent;
-			imgLink = imgLink.substring(3);
-		}
-	}
-	// 去掉./
-	if (imgLink.startsWith("./")) {
-		imgLink = imgLink.substring(2);
-	}
-	// 父级路径找
-	if (currentPath != null) {
-		let searchFile = file.vault.getAbstractFileByPath(normalizePath(currentPath.path + "/" + imgLink));
-		if (searchFile != null && searchFile instanceof TFile) {
-			return searchFile;
-		}
-	}
-	// 找不到开启全局搜索
-	let allFiles = file.vault.getAllLoadedFiles();
-	for (let i = 0; i < allFiles.length; i++) {
-		let searchFile = allFiles[i];
-		if (searchFile instanceof TFile) {
-			if (searchFile.path.endsWith(imgLink)) {
-				return searchFile;
-			}
-		}
+	let metadataCache = SyncCnblogPlugin.getPluginThis().app.metadataCache;
+	return metadataCache.getFirstLinkpathDest(imgLink, "/");
 
-	}
-	return null;
 }
 
 export async function uploadImgs(embeds: EmbedCache[], uploadImgs: [string, string] [], file: TFile, plugin: SyncCnblogPlugin): Promise<Map<string, string>[]> {
@@ -229,7 +202,7 @@ export async function getThePostByName(fileName: string): Promise<Post> {
  */
 export async function uploadPost(post: Post): Promise<string> {
 	let resp: string;
-	let userId = CacheUtil.getSettings().blog_url.substring(CacheUtil.getSettings().blog_url.lastIndexOf("/"));
+	let userId = CacheUtil.getSettings().blogUrl.substring(CacheUtil.getSettings().blogUrl.lastIndexOf("/"));
 
 	if (post.postid === undefined) {
 		resp = await WeblogClient.newPost(post)
@@ -259,7 +232,7 @@ export async function uploadPost(post: Post): Promise<string> {
 export function getUploadedImgs(post: Post): [string, string] [] {
 	let md = post.description;
 	let rtnImgs: [string, string][] = [];
-	if (md && CacheUtil.getSettings().throttling_mode) {
+	if (md && CacheUtil.getSettings().throttlingMode) {
 		let imgs = md.match(/!\[(.*?)\]\((.*?)\)/g);
 		if (imgs) {
 			for (let i = 0; i < imgs.length; i++) {

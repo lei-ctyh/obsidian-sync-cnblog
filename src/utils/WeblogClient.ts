@@ -2,8 +2,6 @@ import {request, RequestUrlParam} from "obsidian";
 import {generateReqXml, parseRespXml} from "./XmlUtil";
 import {ApiType} from "../enum/ApiType";
 import {XmlParam} from "../model/XmlParam";
-import {XmlStruct} from "../model/XmlStruct";
-import {XmlMember} from "../model/XmlMember";
 import CacheUtil from "./CacheUtil";
 import BlogInfo from "../model/structs/BlogInfo";
 import {FileData} from "../model/structs/FileData";
@@ -103,7 +101,7 @@ export default class WeblogClient {
 		const requestUrlParam: RequestUrlParam = {
 			contentType: 'application/xml',
 			method: 'POST',
-			url: CacheUtil.getSettings().blog_url,
+			url: CacheUtil.getSettings().blogUrl,
 			body: generateReqXml(apiType, params)
 		}
 		return request(requestUrlParam)
